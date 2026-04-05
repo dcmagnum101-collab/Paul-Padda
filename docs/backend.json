@@ -1,0 +1,99 @@
+
+{
+  "entities": {
+    "Contact": {
+      "title": "Contact",
+      "type": "object",
+      "description": "Comprehensive prospect profile tracking identity, property, and CRM state.",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "propertyAddress": { "type": "string" },
+        "property_type": { "type": "string", "enum": ["single_family", "condo", "multi_family", "townhouse", "other"] },
+        "pipeline_stage": {
+          "type": "string",
+          "enum": ["new_lead", "attempted_contact", "conversation_had", "follow_up_scheduled", "appointment_set", "under_contract", "listed", "closed", "long_term_nurture", "dnc"]
+        },
+        "icpScore": { "type": "number" },
+        "archagent_source": { "type": "string" },
+        "archagent_tags": { "type": "array", "items": { "type": "string" } },
+        "ai_summary": { "type": "string" },
+        "ai_urgency": { "type": "string", "enum": ["hot", "warm", "cold", "nurture"] },
+        "ai_sentiment": { "type": "string", "enum": ["positive", "neutral", "negative"] },
+        "ai_next_best_action": { "type": "string" },
+        "estimated_commission": { "type": "number" },
+        "loan_to_value": { "type": "number" },
+        "likely_to_list_score": { "type": "number" },
+        "likely_to_lead_score": { "type": "number" },
+        "likely_to_contact_score": { "type": "number" },
+        "motivation": { "type": "string" },
+        "sequence_step": { "type": "number" },
+        "ownerId": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "trulia_id": { "type": "string" },
+        "listing_status": { "type": "string" },
+        "source_evidence": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["name", "ownerId"]
+    },
+    "Goal": {
+      "title": "Agent Goals",
+      "type": "object",
+      "properties": {
+        "callsPerDay": { "type": "number", "default": 20 },
+        "contactsPerWeek": { "type": "number", "default": 10 },
+        "appointmentsPerWeek": { "type": "number", "default": 3 },
+        "emailsPerDay": { "type": "number", "default": 15 },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "OpenHouse": {
+      "title": "Open House Event",
+      "type": "object",
+      "properties": {
+        "address": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "ownerId": { "type": "string" },
+        "status": { "type": "string" },
+        "signin_count": { "type": "number" }
+      }
+    },
+    "Alert": {
+      "title": "Hot Alert",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["sms", "icp", "task", "market"] },
+        "leadId": { "type": "string" },
+        "read": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["password", "anonymous", "google"]
+  },
+  "firestore": {
+    "/users/{userId}/contacts/{contactId}": {
+      "schema": { "$ref": "#/backend/entities/Contact" },
+      "description": "Master contact records."
+    },
+    "/users/{userId}/alerts/{alertId}": {
+      "schema": { "$ref": "#/backend/entities/Alert" },
+      "description": "High-intensity intelligence alerts."
+    },
+    "/users/{userId}/settings/goals": {
+      "schema": { "$ref": "#/backend/entities/Goal" },
+      "description": "Performance tracking goals."
+    },
+    "/openHouses/{ohId}": {
+      "schema": { "$ref": "#/backend/entities/OpenHouse" },
+      "description": "Public-facing open house event configurations."
+    }
+  }
+}
