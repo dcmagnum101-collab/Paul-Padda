@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { KpiCard } from '@/components/dashboard/kpi-card'
 import { PipelineStageBadge, SeverityBadge } from '@/components/cases/status-badge'
@@ -141,8 +140,6 @@ async function getDashboardData() {
 }
 
 export default async function DashboardPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const data = await getDashboardData()
 

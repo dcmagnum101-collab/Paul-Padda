@@ -1,9 +1,9 @@
 'use client'
 
 import { Bell, Search, User } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import { formatLA } from '@/lib/utils'
 import { TimerWidget } from './timer-widget'
+import { MOCK_USER } from '@/lib/mock-user'
 
 interface TopbarProps {
   title: string
@@ -11,8 +11,6 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, subtitle }: TopbarProps) {
-  const { data: session } = useSession()
-
   return (
     <header className="flex items-center justify-between h-12 px-5 border-b border-border bg-card/40 backdrop-blur-sm shrink-0">
       <div className="flex items-center gap-3">
@@ -39,11 +37,11 @@ export function Topbar({ title, subtitle }: TopbarProps) {
             <Bell className="w-3.5 h-3.5" />
           </button>
           <div className="w-7 h-7 flex items-center justify-center rounded bg-gold/10 text-gold">
-            {session?.user?.image ? (
+            {MOCK_USER.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={session.user.image}
-                alt={session.user.name ?? ''}
+                src={MOCK_USER.image}
+                alt={MOCK_USER.name}
                 className="w-7 h-7 rounded object-cover"
               />
             ) : (

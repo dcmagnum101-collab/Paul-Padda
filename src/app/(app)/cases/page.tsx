@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { CasesTable } from './cases-table'
 import Link from 'next/link'
@@ -20,8 +19,6 @@ async function getCases() {
 }
 
 export default async function CasesPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const cases = await getCases()
 

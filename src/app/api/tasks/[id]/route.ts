@@ -1,5 +1,5 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -16,8 +16,6 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
   const parsed = updateTaskSchema.safeParse(body)
@@ -45,8 +43,6 @@ export async function DELETE(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await prisma.task.update({
     where: { id: params.id },

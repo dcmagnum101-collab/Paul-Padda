@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { IntegrationsClient } from './integrations-client'
 
@@ -14,8 +13,6 @@ async function getIntegrationData() {
 }
 
 export default async function IntegrationsPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const { syncHistory } = await getIntegrationData()
 

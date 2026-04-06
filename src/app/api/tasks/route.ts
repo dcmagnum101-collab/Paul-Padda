@@ -1,7 +1,8 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 const createTaskSchema = z.object({
   title: z.string().min(1),
@@ -14,8 +15,6 @@ const createTaskSchema = z.object({
 })
 
 export async function GET(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
@@ -37,8 +36,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
   const parsed = createTaskSchema.safeParse(body)
@@ -52,7 +49,7 @@ export async function POST(request: Request) {
       dueDate: new Date(parsed.data.dueDate),
       priority: parsed.data.priority as never,
       category: parsed.data.category as never,
-      assignedToId: parsed.data.assignedToId ?? session.user?.id ?? '',
+      assignedToId: parsed.data.assignedToId ?? MOCK_USER_ID,
     },
   })
 

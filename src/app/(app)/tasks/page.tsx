@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { TasksTable } from './tasks-table'
 
@@ -26,8 +25,6 @@ async function getUsers() {
 }
 
 export default async function TasksPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const [tasks, users] = await Promise.all([getTasks(), getUsers()])
 

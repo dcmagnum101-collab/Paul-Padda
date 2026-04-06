@@ -1,8 +1,9 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 const schema = z.object({
   current: z.string().min(1),
@@ -10,15 +11,13 @@ const schema = z.object({
 })
 
 export async function PATCH(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
   const parsed = schema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user?.id ?? '' },
+    where: { id: MOCK_USER_ID },
     select: { password: true },
   })
 
@@ -36,7 +35,7 @@ export async function PATCH(request: Request) {
 
   const hashed = await bcrypt.hash(parsed.data.next, 12)
   await prisma.user.update({
-    where: { id: session.user?.id ?? '' },
+    where: { id: MOCK_USER_ID },
     data: { password: hashed },
   })
 

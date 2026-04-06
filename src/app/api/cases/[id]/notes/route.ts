@@ -1,7 +1,8 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 const createNoteSchema = z.object({
   content: z.string().min(1),
@@ -11,8 +12,6 @@ export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const notes = await prisma.note.findMany({
     where: { caseId: params.id },
@@ -27,8 +26,6 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
   const parsed = createNoteSchema.safeParse(body)
@@ -38,7 +35,7 @@ export async function POST(
     data: {
       caseId: params.id,
       content: parsed.data.content,
-      authorId: session.user?.id ?? '',
+      authorId: MOCK_USER_ID,
     },
     include: { author: { select: { name: true } } },
   })

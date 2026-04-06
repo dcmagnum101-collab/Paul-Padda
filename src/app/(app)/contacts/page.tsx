@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { ContactsTable } from './contacts-table'
 import { Plus } from 'lucide-react'
@@ -17,8 +16,6 @@ async function getContacts() {
 }
 
 export default async function ContactsPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const contacts = await getContacts()
 

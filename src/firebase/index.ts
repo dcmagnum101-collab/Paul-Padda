@@ -1,28 +1,24 @@
 'use client';
 
 /**
- * Firebase compatibility shim — replaced with next-auth + Prisma.
- * All data hooks return empty results; useUser wraps next-auth session.
+ * Firebase compatibility shim — auth disabled, returns mock user for UI testing.
  */
 
-import { useSession } from 'next-auth/react';
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { MOCK_USER } from '@/lib/mock-user';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export function useUser() {
-  const { data: session, status } = useSession();
-  const user = session?.user
-    ? {
-        uid: (session.user as any).id ?? session.user.email ?? '',
-        email: session.user.email ?? null,
-        displayName: session.user.name ?? null,
-        photoURL: session.user.image ?? null,
-        isAnonymous: false,
-      }
-    : null;
-  return { user, isUserLoading: status === 'loading', userError: null };
+  const user = {
+    uid: MOCK_USER.id,
+    email: MOCK_USER.email,
+    displayName: MOCK_USER.name,
+    photoURL: MOCK_USER.image,
+    isAnonymous: false,
+  };
+  return { user, isUserLoading: false, userError: null };
 }
 
 export function useAuth() { return null as any; }

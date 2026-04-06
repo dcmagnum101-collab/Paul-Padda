@@ -1,2 +1,4 @@
-import { handlers } from '@/lib/auth'
-export const { GET, POST } = handlers
+// AUTH DISABLED — next-auth route stubbed out
+import { NextResponse } from 'next/server'
+export async function GET() { return NextResponse.json({ disabled: true }) }
+export async function POST() { return NextResponse.json({ disabled: true }) }

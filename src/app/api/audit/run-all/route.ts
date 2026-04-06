@@ -1,7 +1,8 @@
-import { auth } from '@/lib/auth'
+export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { auditCaseWithClaude } from '@/lib/audit/engine'
 import { buildAuditInput } from '@/lib/audit/input-builder'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
   }
 
-  const userId = session.user?.id ?? ''
+  const userId = MOCK_USER_ID
 
   const activeCases = await prisma.case.findMany({
     where: { status: 'ACTIVE' },

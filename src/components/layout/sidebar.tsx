@@ -19,7 +19,7 @@ import {
   LogOut,
   BarChart3,
 } from 'lucide-react'
-import { signOut } from 'next-auth/react'
+// signOut removed — auth disabled
 
 const NAV_SECTIONS = [
   {
@@ -120,7 +120,7 @@ export function Sidebar() {
       {/* Footer */}
       <div className="px-2 pb-4 border-t border-[#111827] pt-3">
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={() => {}}
           className="flex items-center gap-2.5 px-2 py-1.5 rounded text-[13px] text-slate-500 hover:text-red-400 hover:bg-red-500/5 transition-all w-full"
         >
           <LogOut className="w-3.5 h-3.5" />

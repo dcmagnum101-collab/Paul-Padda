@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Topbar } from '@/components/layout/topbar'
 import { BillingClient } from './billing-client'
@@ -41,8 +40,6 @@ async function getBillingData() {
 }
 
 export default async function BillingPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const data = await getBillingData()
 

@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { CaseStatusBadge, PipelineStageBadge, PriorityBadge, SeverityBadge } from '@/components/cases/status-badge'
 import { SolCountdown } from '@/components/cases/sol-countdown'
@@ -42,8 +41,6 @@ async function getCase(id: string) {
 }
 
 export default async function CaseDetailPage({ params }: { params: { id: string } }) {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const c = await getCase(params.id)
   if (!c) notFound()

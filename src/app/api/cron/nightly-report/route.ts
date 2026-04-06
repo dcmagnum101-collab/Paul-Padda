@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { verifyCronSecret } from '@/lib/cron-guard'
 import { gatherNightlyReportData, generateNightlyNarrative } from '@/lib/communications/nightly-report'

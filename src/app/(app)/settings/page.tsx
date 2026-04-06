@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Topbar } from '@/components/layout/topbar'
 import { SettingsClient } from './settings-client'
@@ -33,10 +32,9 @@ async function getSettingsData(userId: string) {
 }
 
 export default async function SettingsPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
+  const mockUserId = '' // AUTH DISABLED: no real user id
 
-  const data = await getSettingsData(session.user?.id ?? '')
+  const data = await getSettingsData(mockUserId)
 
   return (
     <div className="flex flex-col h-full">
@@ -44,7 +42,7 @@ export default async function SettingsPage() {
       <SettingsClient
         currentUser={JSON.parse(JSON.stringify(data.currentUser))}
         allUsers={JSON.parse(JSON.stringify(data.allUsers))}
-        userRole={(session.user as { role?: string })?.role ?? 'STAFF'}
+        userRole="ADMIN" // AUTH DISABLED: default role for UI testing
       />
     </div>
   )

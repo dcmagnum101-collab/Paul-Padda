@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { AuditPageClient } from './audit-client'
 import { Topbar } from '@/components/layout/topbar'
@@ -32,8 +31,6 @@ async function getAuditData() {
 }
 
 export default async function AuditPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const data = await getAuditData()
 
@@ -45,7 +42,7 @@ export default async function AuditPage() {
         unresolvedFlags={JSON.parse(JSON.stringify(data.unresolvedFlags))}
         criticalCount={data.criticalCount}
         highCount={data.highCount}
-        userId={session.user?.id ?? ''}
+        userId="" // AUTH DISABLED
       />
     </div>
   )

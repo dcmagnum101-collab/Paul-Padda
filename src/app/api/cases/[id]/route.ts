@@ -1,7 +1,8 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 const updateCaseSchema = z.object({
   title: z.string().optional(),
@@ -19,8 +20,6 @@ export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const c = await prisma.case.findUnique({
     where: { id: params.id },
@@ -44,8 +43,6 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
   const parsed = updateCaseSchema.safeParse(body)
@@ -63,7 +60,7 @@ export async function PATCH(
         caseId: params.id,
         fromStage: existing.stage as never,
         toStage: parsed.data.stage as never,
-        movedBy: session.user?.id ?? '',
+        movedBy: MOCK_USER_ID,
       },
     })
   }
@@ -80,8 +77,6 @@ export async function DELETE(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // Archive instead of delete
   await prisma.case.update({

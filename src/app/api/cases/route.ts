@@ -1,8 +1,9 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateCaseNumber } from '@/lib/utils'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 const createCaseSchema = z.object({
   title: z.string().min(1),
@@ -26,8 +27,6 @@ const createCaseSchema = z.object({
 })
 
 export async function GET(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
@@ -59,8 +58,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
   const parsed = createCaseSchema.safeParse(body)
@@ -80,7 +77,7 @@ export async function POST(request: Request) {
       estimatedValue: caseData.estimatedValue,
       priority: (caseData.priority ?? 'MEDIUM') as never,
       subType: caseData.subType,
-      assignedToId: assignedToId ?? session.user?.id ?? '',
+      assignedToId: assignedToId ?? MOCK_USER_ID,
     },
   })
 
@@ -101,7 +98,7 @@ export async function POST(request: Request) {
     await prisma.task.createMany({
       data: tasks.map(t => ({
         caseId: newCase.id,
-        assignedToId: assignedToId ?? session.user?.id ?? '',
+        assignedToId: assignedToId ?? MOCK_USER_ID,
         title: t.title,
         category: t.category as never,
         priority: t.priority as never,
@@ -116,7 +113,7 @@ export async function POST(request: Request) {
     data: {
       caseId: newCase.id,
       toStage: 'INTAKE',
-      movedBy: session.user?.id ?? '',
+      movedBy: MOCK_USER_ID,
       notes: 'Case opened',
     },
   })

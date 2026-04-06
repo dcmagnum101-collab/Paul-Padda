@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { DocumentsTable } from './documents-table'
 
@@ -16,8 +15,6 @@ async function getDocuments() {
 }
 
 export default async function DocumentsPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const docs = await getDocuments()
 

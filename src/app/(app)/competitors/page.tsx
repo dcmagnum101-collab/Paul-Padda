@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Topbar } from '@/components/layout/topbar'
 import { CompetitorsClient } from './competitors-client'
@@ -27,8 +26,6 @@ async function getCompetitorData() {
 }
 
 export default async function CompetitorsPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
 
   const data = await getCompetitorData()
 

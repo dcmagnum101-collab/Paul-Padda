@@ -1,3 +1,6 @@
+// AUTH DISABLED: prevent static generation so Prisma runs only at request time
+export const dynamic = 'force-dynamic'
+
 import { Sidebar } from '@/components/layout/sidebar'
 import { Topbar } from '@/components/layout/topbar'
 import { TimerProvider } from '@/contexts/timer-context'

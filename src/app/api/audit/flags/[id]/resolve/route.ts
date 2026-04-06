@@ -1,17 +1,16 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 async function resolveFlag(params: { id: string }) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   await prisma.auditFlag.update({
     where: { id: params.id },
     data: {
       isResolved: true,
       resolvedAt: new Date(),
-      resolvedBy: session.user?.id ?? '',
+      resolvedBy: MOCK_USER_ID,
     },
   })
 

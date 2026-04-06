@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Topbar } from '@/components/layout/topbar'
 import { ReportsClient } from './reports-client'
@@ -142,8 +141,6 @@ async function getReportData() {
 }
 
 export default async function ReportsPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
   const data = await getReportData()
   return (
     <div className="flex flex-col h-full">
