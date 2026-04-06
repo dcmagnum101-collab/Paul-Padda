@@ -29,7 +29,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useUser, useFirestore, useDoc, useMemoFirebase, addDocumentNonBlocking } from "@/firebase"
-import { collection } from "firebase/firestore"
 import { format } from "date-fns"
 import { LeadNurtureEngine } from "@/components/contacts/nurture-engine"
 import { useConversationHistory } from "@/hooks/useFirestoreData"
@@ -52,17 +51,8 @@ export default function ContactProfilePage() {
   const { data: contact, isLoading: contactLoading } = useDoc(contactRef);
   const { data: history, isLoading: historyLoading } = useConversationHistory(params.id as string);
 
-  const handleLogActivity = (type: 'call' | 'sms' | 'email') => {
-    if (!user || !firestore || !params.id) return;
-    const logsRef = collection(firestore, 'users', user.uid, 'contacts', params.id as string, 'activityLogs');
-    addDocumentNonBlocking(logsRef, {
-      type,
-      date: new Date().toISOString(),
-      outcome: `${type.toUpperCase()} outreach initiated`,
-      summary: `Manually initiated ${type} from CRM profile.`,
-      sentiment: 'neutral',
-      ownerId: user.uid
-    });
+  const handleLogActivity = (_type: 'call' | 'sms' | 'email') => {
+    // TODO: Log activity via server action + Prisma Note model
   };
 
   if (contactLoading) return <div className="p-8 text-center text-slate-400 italic">Syncing Lead Intelligence...</div>;

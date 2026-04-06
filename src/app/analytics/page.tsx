@@ -39,7 +39,6 @@ import {
   Zap
 } from "lucide-react";
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from "@/firebase";
-import { collection, query } from "firebase/firestore";
 import { generateWeeklyReport, sendReportToUser } from "@/app/actions/weekly-report";
 import type { WeeklyReport } from "@/lib/weekly-report-types";
 import { startOfWeek, format, startOfMonth, isWithinInterval, endOfMonth } from "date-fns";
@@ -69,15 +68,8 @@ export default function AnalyticsPage() {
     if (cachedReport) setReport(cachedReport as any);
   }, [cachedReport]);
 
-  const contactsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(collection(firestore, "users", user.uid, "contacts"));
-  }, [user, firestore]);
-
-  const tasksQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(collection(firestore, "users", user.uid, "tasks"));
-  }, [user, firestore]);
+  const contactsQuery = useMemoFirebase(() => null, [user, firestore]);
+  const tasksQuery = useMemoFirebase(() => null, [user, firestore]);
 
   const { data: contacts, isLoading: contactsLoading } = useCollection(contactsQuery);
   const { data: tasks, isLoading: tasksLoading } = useCollection(tasksQuery);

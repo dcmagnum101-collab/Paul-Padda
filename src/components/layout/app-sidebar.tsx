@@ -40,9 +40,7 @@ import {
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
-import { signOut } from 'firebase/auth'
-import { initializeFirebase } from '@/firebase/init'
-import { collection, query, where, orderBy, limit, doc } from "firebase/firestore"
+import { signOut } from 'next-auth/react'
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
@@ -54,26 +52,11 @@ export function AppSidebar() {
   const { user } = useUser()
   const firestore = useFirestore()
 
-  // Real-time unread SMS count
-  const unreadQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null
-    return query(collection(firestore, "users", user.uid, "contacts"), where("unreadSMSCount", ">", 0))
-  }, [user, firestore])
-
+  const unreadQuery = useMemoFirebase(() => null, [user, firestore])
   const { data: unreadContacts } = useCollection(unreadQuery)
   const unreadSMSCount = unreadContacts?.length || 0
 
-  // Hot Alerts Query
-  const alertsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null
-    return query(
-      collection(firestore, "users", user.uid, "alerts"),
-      where("read", "==", false),
-      orderBy("created_at", "desc"),
-      limit(10)
-    )
-  }, [user, firestore])
-
+  const alertsQuery = useMemoFirebase(() => null, [user, firestore])
   const { data: hotAlerts, isLoading: alertsLoading } = useCollection(alertsQuery)
   const unreadAlertsCount = hotAlerts?.length || 0
 
@@ -96,20 +79,12 @@ export function AppSidebar() {
     { name: "Settings", href: "/settings", icon: Settings },
   ]
 
-  const handleMarkRead = (alertId: string) => {
-    if (!user || !firestore) return;
-    const alertRef = doc(firestore, `users/${user.uid}/alerts/${alertId}`);
-    updateDocumentNonBlocking(alertRef, { read: true });
+  const handleMarkRead = (_alertId: string) => {
+    // TODO: Mark alert read via server action + Prisma
   };
 
   const handleSignOut = async () => {
-    try {
-      const { auth } = initializeFirebase();
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    await signOut({ callbackUrl: '/login' });
   };
 
   return (

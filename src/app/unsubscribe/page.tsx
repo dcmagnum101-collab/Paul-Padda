@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { MailX, CheckCircle2, Sparkles } from "lucide-react"
 import { useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase"
-import { doc } from "firebase/firestore"
 
 function UnsubscribeContent() {
   const searchParams = useSearchParams();
@@ -15,22 +14,10 @@ function UnsubscribeContent() {
   const contactId = searchParams.get('id');
 
   useEffect(() => {
-    if (!contactId || !user || !firestore) {
-      if (!contactId) setStatus('error');
-      return;
-    }
-
-    const contactRef = doc(firestore, 'users', user.uid, 'contacts', contactId);
-    
-    // Non-blocking update to respect UI speed
-    updateDocumentNonBlocking(contactRef, {
-      email_unsubscribed: true,
-      email_unsubscribed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
-
+    if (!contactId) { setStatus('error'); return; }
+    // TODO: Mark unsubscribed via server action + Prisma
     setStatus('success');
-  }, [contactId, user, firestore]);
+  }, [contactId]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">

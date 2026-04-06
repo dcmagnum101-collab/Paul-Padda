@@ -2,25 +2,17 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore } from "@/firebase";
-import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { useUser } from "@/firebase";
 import { Search, X, ArrowRight, Phone, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-/**
- * Cmd+K global contact search for Monica's MacBook.
- * Opens a modal with a search field and results.
- */
 export function GlobalSearch() {
   const router = useRouter();
   const { user } = useUser();
-  const firestore = useFirestore();
   const [open, setOpen] = useState(false);
   const [query_, setQuery_] = useState("");
   const [results, setResults] = useState<any[]>([]);
-  const [searching, setSearching] = useState(false);
 
-  // Cmd+K listener
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -35,23 +27,10 @@ export function GlobalSearch() {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  const search = useCallback(async (q: string) => {
-    if (!user || !firestore || q.trim().length < 2) {
-      setResults([]);
-      return;
-    }
-    setSearching(true);
-    try {
-      const upper = q.trim().toUpperCase();
-      const contactsRef = collection(firestore, "users", user.uid, "contacts");
-      const snap = await getDocs(
-        query(contactsRef, orderBy("name"), where("name", ">=", upper), where("name", "<=", upper + "\uf8ff"), limit(8))
-      );
-      setResults(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    } finally {
-      setSearching(false);
-    }
-  }, [user, firestore]);
+  const search = useCallback(async (_q: string) => {
+    // TODO: Search via server action + Prisma Contact model
+    setResults([]);
+  }, [user]);
 
   useEffect(() => {
     const t = setTimeout(() => search(query_), 200);
@@ -113,14 +92,8 @@ export function GlobalSearch() {
                           <Phone className="h-3 w-3" />{contact.phone}
                         </span>
                       )}
-                      {contact.propertyAddress && (
-                        <span className="text-xs text-slate-400 truncate max-w-[160px]">{contact.propertyAddress}</span>
-                      )}
                     </div>
                   </div>
-                  {contact.icpScore >= 80 && (
-                    <Badge className="bg-orange-100 text-orange-700 text-[10px] shrink-0">HOT</Badge>
-                  )}
                   <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-primary transition-colors shrink-0" />
                 </button>
               </li>
@@ -128,7 +101,7 @@ export function GlobalSearch() {
           </ul>
         )}
 
-        {query_.length >= 2 && results.length === 0 && !searching && (
+        {query_.length >= 2 && results.length === 0 && (
           <div className="p-8 text-center text-slate-400 text-sm">
             No contacts found for "{query_}"
           </div>

@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,17 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Sparkles, CheckCircle2, RefreshCw, User, MapPin, Building2 } from "lucide-react"
-import { useFirestore, useDoc, addDocumentNonBlocking } from "@/firebase"
-import { collection, doc, updateDoc, increment } from "firebase/firestore"
+import { useDoc } from "@/firebase"
 import { useToast } from "@/hooks/use-toast"
 
 export default function OpenHouseSignInPage() {
   const params = useParams();
-  const firestore = useFirestore();
   const { toast } = useToast();
-  
-  const [oh, setOH] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
   const [submitting, setSubmitting] = useState(false);
   const [completed, setCompleted] = useState(false);
 
@@ -33,78 +29,15 @@ export default function OpenHouseSignInPage() {
     lookingToSell: "no"
   });
 
-  useEffect(() => {
-    if (!params.id || !firestore) return;
-    
-    // Fetch Event Details
-    const ohRef = doc(firestore, 'openHouses', params.id as string);
-    const unsub = () => {
-      // Use getDoc instead of onSnapshot for public lightweight reads
-      const { data } = useDoc(ohRef);
-      if (data) setOH(data);
-      setLoading(false);
-    };
-    
-    setOH(null); // Reset
-    setLoading(true);
-    // Real implementation of fetching the OH
-    const fetchOH = async () => {
-      const snap = await doc(firestore, 'openHouses', params.id as string);
-      // We can't use useDoc inside useEffect correctly, so we'll just set it
-    };
-  }, [params.id, firestore]);
-
-  // Handle Fetch via useDoc hook correctly at top level
-  const ohRef = firestore && params.id ? doc(firestore, 'openHouses', params.id as string) : null;
-  const { data: ohData, isLoading: fetchLoading } = useDoc(ohRef);
+  // TODO: Fetch open house by params.id via Prisma server action
+  const { data: ohData, isLoading: fetchLoading } = useDoc(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ohData || !firestore) return;
 
     setSubmitting(true);
     try {
-      const timestamp = new Date().toISOString();
-      const signinRef = collection(firestore, 'openHouses', params.id as string, 'signins');
-      
-      // 1. Log the Sign-in
-      await addDocumentNonBlocking(signinRef, {
-        ...formData,
-        timestamp,
-        eventId: params.id
-      });
-
-      // 2. Auto-create CRM contact in Monica's private list
-      // We rely on the source 'open_house' to bypass write rules if enabled
-      const contactsRef = collection(firestore, 'users', ohData.ownerId, 'contacts');
-      
-      const icpScore = formData.lookingToSell === 'yes' ? 88 : 45;
-      
-      await addDocumentNonBlocking(contactsRef, {
-        name: `${formData.firstName} ${formData.lastName}`.trim(),
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        propertyAddress: `Attended Open House: ${ohData.address}`,
-        archagent_source: 'open_house',
-        archagent_tags: ['open_house_visitor', formData.hasAgent === 'yes' ? 'has_agent' : 'no_agent'],
-        icpScore,
-        ai_urgency: formData.lookingToSell === 'yes' ? 'hot' : 'nurture',
-        pipeline_stage: 'new_lead',
-        motivation: `Visitor at ${ohData.address}. Selling intent: ${formData.lookingToSell}. Working with agent: ${formData.hasAgent}.`,
-        ownerId: ohData.ownerId,
-        created_at: timestamp,
-        updated_at: timestamp
-      });
-
-      // 3. Update OH Stats
-      const ohDocRef = doc(firestore, 'openHouses', params.id as string);
-      updateDoc(ohDocRef, {
-        signin_count: increment(1),
-        seller_count: formData.lookingToSell === 'yes' ? increment(1) : increment(0)
-      });
-
+      // TODO: Save sign-in and create contact via Prisma server action
       setCompleted(true);
     } catch (err: any) {
       toast({ variant: "destructive", title: "Sign-in Error", description: "Please try again or notify the agent." });

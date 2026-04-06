@@ -15,27 +15,18 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { runProspectingJob } from '@/services/prospecting-service';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 export function EnrichmentTool() {
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const [url, setUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const jobsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(
-      collection(firestore, 'users', user.uid, 'prospecting_jobs'),
-      orderBy('created_at', 'desc'),
-      limit(5)
-    );
-  }, [user, firestore]);
-
+  // TODO: Fetch recent prospecting jobs via Prisma server action
+  const jobsQuery = useMemoFirebase(() => null, [user]);
   const { data: recentJobs } = useCollection(jobsQuery);
 
   const handleEnrich = async () => {

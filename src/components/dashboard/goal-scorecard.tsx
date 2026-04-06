@@ -6,47 +6,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, Mail, Users, Calendar, Target } from "lucide-react";
 import { useUser, useDoc, useMemoFirebase, useCollection } from "@/firebase";
 import { DEFAULT_GOALS, type Goals } from "@/lib/goals-constants";
-import { collection, query, where, collectionGroup } from "firebase/firestore";
-import { useFirestore } from "@/firebase";
 import { startOfWeek, format } from "date-fns";
 
 export function GoalScorecard() {
   const { user } = useUser();
-  const firestore = useFirestore();
-  
+
   const today = new Date().toISOString().split('T')[0];
   const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
-  const goalsRef = useMemoFirebase(() => user ? `users/${user.uid}/settings/goals` : null, [user]);
+  // TODO: Fetch goals, calls, emails, contacts, appointments via Prisma server actions
+  const goalsRef = useMemoFirebase(() => null, [user]);
   const { data: goalsData, isLoading: goalsLoading } = useDoc(goalsRef);
   const goals = (goalsData as Goals) || DEFAULT_GOALS;
 
-  const callsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(
-      collectionGroup(firestore, "activityLogs"),
-      where("ownerId", "==", user.uid),
-      where("type", "==", "call"),
-      where("date", ">=", today)
-    );
-  }, [user, firestore, today]);
-
-  const emailsRef = useMemoFirebase(() => user ? `users/${user.uid}/email_quota/${today}` : null, [user, today]);
-  const contactsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(
-      collection(firestore, "users", user.uid, "contacts"),
-      where("created_at", ">=", weekStart)
-    );
-  }, [user, firestore, weekStart]);
-
-  const apptsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(
-      collection(firestore, "users", user.uid, "appointments"),
-      where("date", ">=", weekStart)
-    );
-  }, [user, firestore, weekStart]);
+  const callsQuery = useMemoFirebase(() => null, [user, today]);
+  const emailsRef = useMemoFirebase(() => null, [user, today]);
+  const contactsQuery = useMemoFirebase(() => null, [user, weekStart]);
+  const apptsQuery = useMemoFirebase(() => null, [user, weekStart]);
 
   const { data: calls, isLoading: callsLoading } = useCollection(callsQuery);
   const { data: emailsQuota, isLoading: emailsLoading } = useDoc(emailsRef);

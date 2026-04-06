@@ -5,9 +5,6 @@
  * Handles property search and normalization as a backup source.
  */
 
-import { adminDb } from '@/lib/firebase-admin';
-import * as admin from 'firebase-admin';
-
 const RAPIDAPI_KEY = process.env.RAPIDAPI_REALTOR_KEY || process.env.RAPIDAPI_KEY;
 const RAPIDAPI_HOST = process.env.RAPIDAPI_REALTOR_HOST || 'realtor-stable.p.rapidapi.com';
 const BASE_URL = `https://${RAPIDAPI_HOST}`;
@@ -18,14 +15,8 @@ const headers = {
   'x-rapidapi-key': RAPIDAPI_KEY || '',
 };
 
-async function trackApiCall(userId: string) {
-  const month = new Date().toISOString().slice(0, 7);
-  const quotaRef = adminDb.collection('users').doc(userId).collection('rapidapi_quota').doc(month);
-  await quotaRef.set({ 
-    realtor_calls: admin.firestore.FieldValue.increment(1), 
-    month,
-    updated_at: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+async function trackApiCall(_userId: string) {
+  // TODO: Track quota using Prisma
 }
 
 export async function searchRealtor(userId: string, params: {

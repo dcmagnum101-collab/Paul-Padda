@@ -24,7 +24,6 @@ import {
   ArrowLeft
 } from "lucide-react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
-import { collection, query, orderBy, where, doc, limit } from "firebase/firestore"
 import { format } from "date-fns"
 import { sendSMSAction } from "@/app/actions/twilio"
 import { useToast } from "@/hooks/use-toast"
@@ -39,27 +38,10 @@ export default function SMSInboxPage() {
   const [sending, setSending] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // 1. Fetch Conversations (Contacts with message activity)
-  const convoQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null
-    return query(
-      collection(firestore, "users", user.uid, "contacts"),
-      where("lastMessageSnippet", "!=", null),
-      orderBy("lastContactDate", "desc")
-    )
-  }, [user, firestore])
-
+  const convoQuery = useMemoFirebase(() => null, [user, firestore])
   const { data: convos, isLoading: convosLoading } = useCollection(convoQuery)
 
-  // 2. Fetch Thread for Selected Contact
-  const threadQuery = useMemoFirebase(() => {
-    if (!user || !firestore || !selectedContact) return null
-    return query(
-      collection(firestore, "users", user.uid, "contacts", selectedContact.id, "sms_thread"),
-      orderBy("timestamp", "asc"),
-      limit(100)
-    )
-  }, [user, firestore, selectedContact])
+  const threadQuery = useMemoFirebase(() => null, [user, firestore, selectedContact])
 
   const { data: thread } = useCollection(threadQuery)
 
@@ -70,13 +52,8 @@ export default function SMSInboxPage() {
     }
   }, [thread])
 
-  // Mark as Read
-  useEffect(() => {
-    if (selectedContact?.unreadSMSCount > 0 && user) {
-      const ref = doc(firestore, `users/${user.uid}/contacts/${selectedContact.id}`)
-      updateDocumentNonBlocking(ref, { unreadSMSCount: 0 })
-    }
-  }, [selectedContact, user, firestore])
+  // Mark as Read (TODO: implement via server action + Prisma)
+  useEffect(() => {}, [selectedContact, user])
 
   // Request Notifications Permission
   useEffect(() => {

@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Trello, Phone, MessageSquare, Flame, ArrowRight, RefreshCw, Layers } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
 import Link from "next/link";
 
 const STAGES: { id: PipelineStage; label: string; color: string }[] = [
@@ -32,10 +31,7 @@ export default function PipelinePage() {
     setMounted(true);
   }, []);
 
-  const contactsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(collection(firestore, "users", user.uid, "contacts"));
-  }, [user, firestore]);
+  const contactsQuery = useMemoFirebase(() => null, [user, firestore]);
 
   const { data: contacts, isLoading } = useCollection(contactsQuery);
 
@@ -48,13 +44,8 @@ export default function PipelinePage() {
     return stageContacts.reduce((sum, c) => sum + (c.estimated_commission || 0), 0);
   };
 
-  const handleMoveStage = (contactId: string, nextStage: PipelineStage) => {
-    if (!user || !firestore) return;
-    const contactRef = doc(firestore, "users", user.uid, "contacts", contactId);
-    updateDocumentNonBlocking(contactRef, {
-      pipeline_stage: nextStage,
-      updated_at: new Date().toISOString(),
-    });
+  const handleMoveStage = (_contactId: string, _nextStage: PipelineStage) => {
+    // TODO: Update stage via server action + Prisma
   };
 
   if (!mounted) return null;

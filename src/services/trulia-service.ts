@@ -5,9 +5,6 @@
  * Handles location hashing, search requests, and Firestore caching.
  */
 
-import { adminDb } from '@/lib/firebase-admin';
-import * as admin from 'firebase-admin';
-
 const RAPIDAPI_KEY = process.env.RAPIDAPI_TRULIA_KEY || process.env.RAPIDAPI_KEY;
 const RAPIDAPI_HOST = process.env.RAPIDAPI_TRULIA_HOST || 'trulia5.p.rapidapi.com';
 const BASE_URL = `https://${RAPIDAPI_HOST}`;
@@ -18,15 +15,9 @@ const headers = {
   'x-rapidapi-key': RAPIDAPI_KEY || '',
 };
 
-// ── QUOTA TRACKER ───────────────────────────────
-async function trackApiCall(userId: string, api: 'trulia' | 'realtor') {
-  const month = new Date().toISOString().slice(0, 7);
-  const quotaRef = adminDb.collection('users').doc(userId).collection('rapidapi_quota').doc(month);
-  await quotaRef.set({ 
-    [`${api}_calls`]: admin.firestore.FieldValue.increment(1), 
-    month,
-    updated_at: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+// ── QUOTA TRACKER (stub) ─────────────────────────
+async function trackApiCall(_userId: string, _api: 'trulia' | 'realtor') {
+  // TODO: Track quota using Prisma
 }
 
 // ── LOCATION HASH GENERATOR ─────────────────────
@@ -54,62 +45,25 @@ export async function generateLocationHash(params: {
   return Buffer.from(JSON.stringify(locationObj)).toString('base64');
 }
 
-// ── TRULIA API WRAPPER WITH CACHING ──────────────
-async function cachedPost(
-  userId: string,
-  endpoint: string,
-  body: object,
-  cacheTTL_hours: number = 6
-): Promise<any> {
-  if (!userId) throw new Error("User ID required for Trulia service");
-  if (!RAPIDAPI_KEY) throw new Error("RapidAPI key not configured for Trulia");
+// ── TRULIA API WRAPPER ───────────────────────────
+async function cachedPost(userId: string, endpoint: string, body: object, _cacheTTL_hours: number = 6): Promise<any> {
+  if (!userId) throw new Error('User ID required for Trulia service');
+  if (!RAPIDAPI_KEY) throw new Error('RapidAPI key not configured for Trulia');
 
-  const bodyStr = JSON.stringify(body);
-  const cacheKey = Buffer.from(`${endpoint}_${bodyStr}`).toString('base64').slice(0, 100).replace(/\//g, '_');
-  const cacheRef = adminDb.collection('users').doc(userId).collection('trulia_cache').doc(cacheKey);
+  const response = await fetch(`${BASE_URL}/${endpoint}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
 
-  try {
-    const cached = await cacheRef.get();
-    if (cached.exists) {
-      const data = cached.data();
-      const expiresAt = data?.expires_at?.toDate();
-      if (expiresAt && expiresAt > new Date()) {
-        console.log(`[Trulia] Cache hit: ${endpoint}`);
-        return data?.response;
-      }
-    }
-
-    console.log(`[Trulia] API call: ${endpoint}`);
-    const response = await fetch(`${BASE_URL}/${endpoint}`, {
-      method: 'POST',
-      headers,
-      body: bodyStr,
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Trulia API error ${response.status}: ${errText}`);
-    }
-
-    const result = await response.json();
-
-    // Track quota
-    await trackApiCall(userId, 'trulia');
-
-    // Update cache
-    await cacheRef.set({
-      endpoint,
-      body,
-      response: result,
-      cached_at: admin.firestore.FieldValue.serverTimestamp(),
-      expires_at: new Date(Date.now() + cacheTTL_hours * 60 * 60 * 1000),
-    });
-
-    return result;
-  } catch (error) {
-    console.error("Trulia Service Error:", error);
-    throw error;
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Trulia API error ${response.status}: ${errText}`);
   }
+
+  const result = await response.json();
+  await trackApiCall(userId, 'trulia');
+  return result;
 }
 
 // ── SEARCH ENDPOINTS ─────────────────────────────

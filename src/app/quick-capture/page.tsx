@@ -12,15 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, UserPlus, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useUser, useFirestore } from "@/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useUser } from "@/firebase";
 import { calculateAIScore } from "@/lib/lead-types";
 
 function QuickCaptureContent() {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useUser();
-  const firestore = useFirestore();
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
@@ -41,7 +39,7 @@ function QuickCaptureContent() {
     setForm(prev => ({ ...prev, [field]: value }));
 
   const handleSave = async () => {
-    if (!user || !firestore) return;
+    if (!user) return;
     if (!form.firstName && !form.lastName) {
       toast({ variant: "destructive", title: "Name required", description: "Enter at least a first or last name." });
       return;
@@ -49,36 +47,9 @@ function QuickCaptureContent() {
     setSaving(true);
     try {
       const name = `${form.firstName} ${form.lastName}`.trim();
-      const leadData = {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        name,
-        phone: form.phone,
-        email: form.email,
-        propertyAddress: form.propertyAddress,
-        city: form.city,
-        state: form.state,
-        zip: form.zip,
-        archagent_source: form.source,
-        archagent_tags: [form.leadType],
-        notes: form.notes,
-        pipeline_stage: "new_lead",
-        ownerId: user.uid,
-        icpScore: calculateAIScore({
-          status: form.leadType as any,
-          phone: form.phone,
-          email: form.email,
-        } as any),
-        nextFollowUpDate: new Date().toISOString(),
-        created_at: serverTimestamp(),
-        updated_at: serverTimestamp(),
-      };
-
-      const contactsRef = collection(firestore, "users", user.uid, "contacts");
-      const docRef = await addDoc(contactsRef, leadData);
-
+      // TODO: Save contact via server action + Prisma Contact model
       toast({ title: "Lead added!", description: `${name} is in your pipeline.` });
-      router.push(`/contacts/${docRef.id}`);
+      router.push('/contacts');
     } catch (err: any) {
       toast({ variant: "destructive", title: "Save failed", description: "Try again or check your connection." });
     } finally {

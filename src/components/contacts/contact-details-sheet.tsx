@@ -52,19 +52,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { 
-  useUser, 
-  useFirestore, 
-  useDoc, 
-  updateDocumentNonBlocking 
-} from "@/firebase"
+import { useUser, useDoc } from "@/firebase"
 import { useConversationHistory, useAppointments } from "@/hooks/useFirestoreData"
 import { sendNurtureEmail, getGmailConnectionStatus } from "@/app/actions/gmail"
 import { refreshListingDetailAction } from "@/app/actions/lvr-mls"
 import { generateAppointmentBrief, type AppointmentBrief } from "@/app/actions/appointment-brief"
 import { emailTemplates } from "@/services/email-templates"
 import { useToast } from "@/hooks/use-toast"
-import { doc } from "firebase/firestore"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { connectGmailAccount } from "@/firebase/auth/gmail-auth"
@@ -79,7 +73,6 @@ interface ContactDetailsSheetProps {
 
 export function ContactDetailsSheet({ contact: initialContact, open, onOpenChange }: ContactDetailsSheetProps) {
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
   const [isRefreshingMLS, setIsRefreshingMLS] = useState(false);
@@ -109,7 +102,7 @@ export function ContactDetailsSheet({ contact: initialContact, open, onOpenChang
         title: "Gmail Not Connected",
         description: "Connect your Google account to send emails from Monica.",
         action: (
-          <Button size="sm" onClick={() => connectGmailAccount(user.uid)}>Connect Now</Button>
+          <Button size="sm" onClick={() => connectGmailAccount()}>Connect Now</Button>
         )
       });
       return;
@@ -162,12 +155,8 @@ export function ContactDetailsSheet({ contact: initialContact, open, onOpenChang
     if (!user || !contact?.mlsNumber) return;
     setIsRefreshingMLS(true);
     try {
-      const freshData = await refreshListingDetailAction(user.uid, contact.mlsNumber);
-      const ref = doc(firestore, `users/${user.uid}/contacts/${contactId}`);
-      updateDocumentNonBlocking(ref, {
-        ...freshData,
-        updated_at: new Date().toISOString()
-      });
+      await refreshListingDetailAction(user.uid, contact.mlsNumber);
+      // TODO: Persist refreshed MLS data via Prisma server action
       toast({ title: "MLS Refreshed", description: "Successfully pulled LVR data." });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Refresh Failed", description: err.message });

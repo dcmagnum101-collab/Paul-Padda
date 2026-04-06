@@ -1,12 +1,13 @@
 {
+  "installCommand": "npm install --legacy-peer-deps",
   "crons": [
     {
       "path": "/api/cron/morning-briefing",
-      "schedule": "0 7 * * 1-5"
+      "schedule": "0 14 * * 1-5"
     },
     {
       "path": "/api/cron/nightly-report",
-      "schedule": "0 18 * * 1-5"
+      "schedule": "0 1 * * 1-5"
     },
     {
       "path": "/api/cron/audit-sweep",
@@ -17,8 +18,8 @@
       "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/cron/integration-sync",
-      "schedule": "*/30 * * * *"
+      "path": "/api/cron/daily-sync",
+      "schedule": "0 16 * * *"
     }
   ],
   "functions": {

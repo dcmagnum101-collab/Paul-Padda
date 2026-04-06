@@ -1,33 +1,19 @@
-'use client';
+// Stub — Firebase error emitter removed.
+type EventHandler = (...args: any[]) => void;
 
-import { EventEmitter } from 'events';
-import { FirestorePermissionError } from './errors';
-
-type FirebaseErrorEvents = {
-  'permission-error': (error: FirestorePermissionError) => void;
-};
-
-class FirebaseErrorEmitter extends EventEmitter {
-  emit<K extends keyof FirebaseErrorEvents>(
-    event: K,
-    ...args: Parameters<FirebaseErrorEvents[K]>
-  ): boolean {
-    return super.emit(event, ...args);
+class SimpleEmitter {
+  private handlers: Record<string, EventHandler[]> = {};
+  on(event: string, handler: EventHandler) {
+    (this.handlers[event] = this.handlers[event] || []).push(handler);
   }
-
-  on<K extends keyof FirebaseErrorEvents>(
-    event: K,
-    listener: FirebaseErrorEvents[K]
-  ): this {
-    return super.on(event, listener);
+  off(event: string, handler: EventHandler) {
+    if (this.handlers[event]) {
+      this.handlers[event] = this.handlers[event].filter(h => h !== handler);
+    }
   }
-
-  off<K extends keyof FirebaseErrorEvents>(
-    event: K,
-    listener: FirebaseErrorEvents[K]
-  ): this {
-    return super.off(event, listener);
+  emit(event: string, ...args: any[]) {
+    (this.handlers[event] || []).forEach(h => h(...args));
   }
 }
 
-export const errorEmitter = new FirebaseErrorEmitter();
+export const errorEmitter = new SimpleEmitter();

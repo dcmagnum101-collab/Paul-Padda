@@ -24,12 +24,10 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase"
-import { collection, query, orderBy, doc, setDoc } from "firebase/firestore"
+import { useUser, useCollection, useMemoFirebase } from "@/firebase"
 
 export default function OpenHousePage() {
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast()
   const [mounted, setMounted] = useState(false)
   const [newAddress, setNewAddress] = useState("");
@@ -40,36 +38,21 @@ export default function OpenHousePage() {
     setMounted(true)
   }, [])
 
-  // Use top-level collection for public access
-  const ohQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return query(collection(firestore, 'openHouses'), orderBy('date', 'desc'));
-  }, [firestore, user]);
-
+  // TODO: Fetch open houses via Prisma server action
+  const ohQuery = useMemoFirebase(() => null, [user]);
   const { data: openHouses, isLoading } = useCollection(ohQuery);
 
   const handleCreateOpenHouse = async () => {
-    if (!firestore || !user || !newAddress || !newDate) return;
-    
+    if (!user || !newAddress || !newDate) return;
+
     setIsCreating(true);
     try {
-      const ohRef = doc(collection(firestore, 'openHouses'));
-      await setDoc(ohRef, {
-        id: ohRef.id,
-        address: newAddress,
-        date: newDate,
-        signin_count: 0,
-        seller_count: 0,
-        status: 'upcoming',
-        ownerId: user.uid,
-        created_at: new Date().toISOString()
-      });
-
+      // TODO: Create open house via Prisma server action
       toast({
         title: "Open House Created",
         description: "Public sign-in page and QR code are ready."
       });
-      
+
       setNewAddress("");
       setNewDate("");
     } catch (err: any) {

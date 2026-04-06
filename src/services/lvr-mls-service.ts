@@ -5,8 +5,6 @@
  * Handles OpenID Connect authenticated queries to the Spark platform.
  */
 
-import { adminDb } from '@/lib/firebase-admin';
-import * as admin from 'firebase-admin';
 import { normalizeAddress } from '@/utils/address-utils';
 
 const SPARK_API_URL = 'https://sparkapi.com/v1';
@@ -100,19 +98,8 @@ async function fetchSpark(endpoint: string, params: Record<string, string> = {})
   }
 }
 
-export async function getListingsInRadius(userId: string, lat: number, lng: number, radiusMeters: number): Promise<MLSListing[]> {
+export async function getListingsInRadius(_userId: string, lat: number, lng: number, radiusMeters: number): Promise<MLSListing[]> {
   const radiusMiles = radiusMeters * 0.000621371;
-  const cacheKey = `radius_${lat.toFixed(4)}_${lng.toFixed(4)}_${radiusMeters}`;
-  const cacheRef = adminDb.collection('users').doc(userId).collection('mls_cache').doc(cacheKey);
-
-  // Check Firestore Cache (15 min)
-  const cached = await cacheRef.get();
-  if (cached.exists) {
-    const data = cached.data();
-    if (data?.expires_at.toDate() > new Date()) {
-      return data.listings;
-    }
-  }
 
   const params = {
     '_filter': `Nearby(${lat},${lng},${radiusMiles})`,
@@ -147,12 +134,6 @@ export async function getListingsInRadius(userId: string, lat: number, lng: numb
       pinColor: attrs.color,
       pinLabel: attrs.label
     };
-  });
-
-  // Persist to Cache
-  await cacheRef.set({
-    listings,
-    expires_at: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 15 * 60 * 1000))
   });
 
   return listings;

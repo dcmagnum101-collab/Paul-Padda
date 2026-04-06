@@ -23,8 +23,7 @@ import {
   ChevronUp,
   RefreshCw,
 } from "lucide-react";
-import { useUser, useFirestore } from "@/firebase";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { useUser } from "@/firebase";
 import { saveSettingsSection } from "@/app/actions/save-settings";
 import { connectGmailAccount } from "@/firebase/auth/gmail-auth";
 import { syncVulcan7Leads } from "@/app/actions/vulcan7";
@@ -55,7 +54,6 @@ function StepIndicator({ step, current }: { step: number; current: number }) {
 export default function SetupGuidePage() {
   const router = useRouter();
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
 
   const [step, setStep] = useState(1);
@@ -81,20 +79,11 @@ export default function SetupGuidePage() {
   // Step 4 state
   const [gmailConnected, setGmailConnected] = useState(false);
 
-  // Check if already completed
-  useEffect(() => {
-    if (!user || !firestore) return;
-    getDoc(doc(firestore, "users", user.uid)).then(snap => {
-      if (snap.exists() && snap.data()?.setup_complete) {
-        router.replace("/");
-      }
-    });
-  }, [user, firestore, router]);
+  useEffect(() => {}, [user, router]);
 
   const markComplete = useCallback(async () => {
-    if (!user || !firestore) return;
-    await setDoc(doc(firestore, "users", user.uid), { setup_complete: true }, { merge: true });
-  }, [user, firestore]);
+    // TODO: Mark setup complete via server action + Prisma
+  }, [user]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -143,8 +132,7 @@ export default function SetupGuidePage() {
   };
 
   const handleConnectGmail = async () => {
-    if (!user) return;
-    await connectGmailAccount(user.uid);
+    await connectGmailAccount();
     setGmailConnected(true);
   };
 
