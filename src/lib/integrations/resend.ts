@@ -1,6 +1,11 @@
 import { Resend } from 'resend'
+import React from 'react'
 
-export const resend = new Resend(process.env.RESEND_API_KEY ?? 'placeholder_key_not_set')
+function getResendClient(): Resend {
+  const key = process.env.RESEND_API_KEY
+  if (!key) throw new Error('RESEND_API_KEY is not set. Configure it in .env.local to enable email sending.')
+  return new Resend(key)
+}
 
 export interface EmailResult {
   success: boolean
@@ -20,7 +25,8 @@ export async function sendEmail({
   from?: string
 }): Promise<EmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
+    const client = getResendClient()
+    const { data, error } = await client.emails.send({
       from: from ?? process.env.RESEND_FROM_EMAIL ?? 'briefings@paddalaw.ai',
       to: Array.isArray(to) ? to : [to],
       subject,
@@ -51,5 +57,9 @@ export async function sendAlertEmail({
   })
 }
 
-// Import needed for JSX in this file
-import React from 'react'
+// Lazy-proxy resend client — compatible with direct resend.emails.send() usage in cron routes
+export const resend = {
+  emails: {
+    send: (params: Parameters<Resend['emails']['send']>[0]) => getResendClient().emails.send(params),
+  },
+}

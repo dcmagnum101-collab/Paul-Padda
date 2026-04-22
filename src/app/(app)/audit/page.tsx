@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
 import { AuditPageClient } from './audit-client'
 import { Topbar } from '@/components/layout/topbar'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 export const metadata = { title: 'AI Audit | Padda Legal Intelligence' }
 
@@ -42,7 +42,7 @@ export default async function AuditPage() {
         unresolvedFlags={JSON.parse(JSON.stringify(data.unresolvedFlags))}
         criticalCount={data.criticalCount}
         highCount={data.highCount}
-        userId="" // AUTH DISABLED
+        userId={MOCK_USER_ID}
       />
     </div>
   )
