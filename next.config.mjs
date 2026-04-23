@@ -6,8 +6,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config, { isServer }) => {
-    // Stub out legacy firebase and google maps packages
+  webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       'firebase/firestore': false,
@@ -22,9 +21,7 @@ const nextConfig = {
     }
     return config
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
-  },
+  serverExternalPackages: ['@prisma/client', 'prisma'],
   images: {
     remotePatterns: [
       {
