@@ -162,7 +162,7 @@ export default async function DashboardPage() {
             {formatLA(new Date(), 'EEEE, MMMM d, yyyy')}
           </h1>
           <p className="text-[11px] text-slate-500 mt-0.5">
-            Welcome back, {session.user?.name?.split(' ')[0] ?? 'Counselor'}
+            Welcome back, Paul
           </p>
         </div>
         <div className="text-right">

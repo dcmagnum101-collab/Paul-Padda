@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         category: t.category as never,
         priority: t.priority as never,
         dueDate: new Date(t.dueDate),
-        status: 'TODO' as never,
+        status: 'PENDING' as never,
       })),
     })
   }

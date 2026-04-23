@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
 import { Topbar } from '@/components/layout/topbar'
 import { SettingsClient } from './settings-client'
+import { MOCK_USER_ID } from '@/lib/mock-user'
 
 export const metadata = { title: 'Settings | Padda Legal Intelligence' }
 
@@ -32,9 +32,7 @@ async function getSettingsData(userId: string) {
 }
 
 export default async function SettingsPage() {
-  const mockUserId = '' // AUTH DISABLED: no real user id
-
-  const data = await getSettingsData(mockUserId)
+  const data = await getSettingsData(MOCK_USER_ID)
 
   return (
     <div className="flex flex-col h-full">
